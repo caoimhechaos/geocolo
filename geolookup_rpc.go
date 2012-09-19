@@ -49,6 +49,10 @@ func NewGeoProximityService(
 	dsn = fmt.Sprintf("user=%s dbname=%s host=%s port=%d",
 		*config.User, *config.Dbname, *config.Host, *config.Port)
 
+	if config.Password != nil {
+		dsn += fmt.Sprintf(" password=%s", *config.Password)
+	}
+
 	if config.Sslmode != nil {
 		dsn += fmt.Sprintf(" sslmode=%s", *config.Sslmode)
 	}
