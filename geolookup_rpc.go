@@ -50,7 +50,7 @@ func NewGeoProximityService(
 		*config.User, *config.Dbname, *config.Host, *config.Port)
 
 	if config.Sslmode != nil {
-		dsn += fmt.Sprintf(" sslmode=%s", config.Sslmode)
+		dsn += fmt.Sprintf(" sslmode=%s", *config.Sslmode)
 	}
 
 	c, err = sql.Open("postgres", dsn)
