@@ -55,9 +55,10 @@ func main() {
 
 	flag.StringVar(&configpath, "config", "",
 		"Path to the geocolo service configuration")
-	flag.StringVar(&doozer_uri, "doozer-uri", "",
+	flag.StringVar(&doozer_uri, "doozer-uri", os.Getenv("DOOZER_URI"),
 		"URI of the Doozer service")
-	flag.StringVar(&boot_uri, "doozer-boot-uri", "",
+	flag.StringVar(&boot_uri, "doozer-boot-uri",
+		os.Getenv("DOOZER_BOOT_URI"),
 		"Boot URI of the Doozer service")
 	flag.StringVar(&listen_net, "listen-proto", "tcp",
 		"Protocol type to listen on (e.g. tcp)")
