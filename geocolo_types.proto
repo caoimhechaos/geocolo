@@ -69,6 +69,7 @@ message GeoProximityServiceConfig {
 	optional string sslmode = 3;
 	required string host = 4;
 	required int32 port = 5;
+	optional string password = 6;
 }
 
 service GeoProximityService {
