@@ -81,7 +81,7 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 		rows, err = self.conn.Query("SELECT s.iso_a2, distance(" +
 			"s.the_geom, (SELECT g.the_geom FROM geoborders g " +
 			"WHERE g.iso_a2 = ?)) AS dist FROM geoborders s " +
-			"ORDER BY dist ASC;", req.Origin, req.Candidates)
+			"ORDER BY dist ASC;", *req.Origin, req.Candidates)
 	}
 	if err != nil {
 		return err
