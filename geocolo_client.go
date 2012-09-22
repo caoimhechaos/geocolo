@@ -85,15 +85,34 @@ func main() {
 	req.DetailedResponse = &detailed
 
 	client = rpc.NewClient(conn)
-	err = client.Call("GeoProximityService.GetProximity", req, res)
+	err = client.Call("GeoProximityService.GetProximity", req, &res)
 	if err != nil {
 		log.Fatal("Error sending proximity request: ", err.Error())
 	}
 
-	fmt.Printf("Closest country: %s\n", *res.Closest)
+	if res.Closest == nil {
+		log.Fatal("Failed to fetch closest country")
+	} else {
+		fmt.Printf("Closest country: %s\n", *res.Closest)
+	}
 
 	for _, detail := range res.FullMap {
-		fmt.Printf("Country %s: distance %f\n", *detail.Country,
-			*detail.Distance)
+		if detail == nil {
+			log.Print("Error: detail is nil?")
+		} else if detail.Country == nil {
+			log.Print("Error: country is nil?")
+			if detail.Distance != nil {
+				log.Printf("(distance was %f)",
+					*detail.Distance)
+			}
+		} else if detail.Distance == nil {
+			log.Print("Error: distance is nil?")
+			if detail.Country != nil {
+				log.Printf("(country was %s)", *detail.Country)
+			}
+		} else {
+			fmt.Printf("Country %s: distance %f\n", *detail.Country,
+				*detail.Distance)
+		}
 	}
 }
