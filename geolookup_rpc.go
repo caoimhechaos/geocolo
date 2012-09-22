@@ -32,6 +32,7 @@ package geocolo
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "github.com/bmizerany/pq"
 )
@@ -75,14 +76,14 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 	if len(req.Candidates) > 0 {
 		rows, err = self.conn.Query("SELECT s.iso_a2, distance("+
 			"s.the_geom, (SELECT g.the_geom FROM geoborders g "+
-			"WHERE g.iso_a2 = ?)) AS dist FROM geoborders s "+
-			"WHERE s.iso_a2 IN (?) ORDER BY dist ASC;",
-			*req.Origin, req.Candidates)
+			"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s "+
+			"WHERE s.iso_a2 IN ( $2 ) ORDER BY dist ASC",
+			strings.ToUpper(*req.Origin), req.Candidates)
 	} else {
 		rows, err = self.conn.Query("SELECT s.iso_a2, distance("+
 			"s.the_geom, (SELECT g.the_geom FROM geoborders g "+
-			"WHERE g.iso_a2 = ?)) AS dist FROM geoborders s "+
-			"ORDER BY dist ASC;", *req.Origin, req.Candidates)
+			"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s "+
+			"ORDER BY dist ASC", strings.ToUpper(*req.Origin))
 	}
 	if err != nil {
 		return err
@@ -96,6 +97,11 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 		err = rows.Scan(detail.Country, detail.Distance)
 		if err != nil {
 			return err
+		}
+
+		// Go RPC hates 0 values :S
+		if *detail.Distance == 0 {
+			*detail.Distance -= 0.001
 		}
 
 		if res.Closest == nil {
