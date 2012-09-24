@@ -73,11 +73,27 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 	var err error
 
 	if len(req.Candidates) > 0 {
+		var fullsql string
+		var valuecollection []string
+		var value string
+
+		for _, value = range req.Candidates {
+			value = strings.ToUpper(value)
+			if len(value) == 2 && value[0] >= 'A' &&
+				value[0] <= 'Z' && value[1] >= 'A' &&
+				value[1] <= 'Z' {
+				valuecollection = append(valuecollection,
+					"'" + value + "'")
+			}
+		}
+
+		fullsql = strings.Join(valuecollection, ",")
+
 		rows, err = self.conn.Query("SELECT s.iso_a2, distance(" +
 			"s.the_geom, (SELECT g.the_geom FROM geoborders g " +
 			"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s " +
-			"WHERE s.iso_a2 IN ( $2 ) ORDER BY dist ASC",
-			strings.ToUpper(*req.Origin), req.Candidates)
+			"WHERE s.iso_a2 IN ( " + fullsql + " ) ORDER BY " +
+			"dist ASC", strings.ToUpper(*req.Origin))
 	} else {
 		rows, err = self.conn.Query("SELECT s.iso_a2, distance(" +
 			"s.the_geom, (SELECT g.the_geom FROM geoborders g " +
