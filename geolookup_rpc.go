@@ -31,6 +31,7 @@ package geocolo
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -72,6 +73,10 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 	res *GeoProximityResponse) error {
 	var rows *sql.Rows
 	var err error
+
+	if req.Origin == nil {
+		return errors.New("No origin specified")
+	}
 
 	if len(req.Candidates) > 0 {
 		var fullsql string
