@@ -26,12 +26,13 @@ rpcclient = env.Go('geocolo_client', ['geocolo_client.go'])
 env.Requires(rpcclient, pack)
 client = env.GoProgram('geocolo-client', rpcclient)
 
-env.Install(env['DESTDIR'] + env['GO_PKGROOT'], pack)
+env.Install(env['DESTDIR'] + env['GO_PKGROOT'] + "/ancientsolutions.com", pack)
 env.Install(env['DESTDIR'] + env['ENV']['GOBIN'], server)
 env.Install(env['DESTDIR'] + env['ENV']['GOBIN'], client)
-env.Alias('install', [env['DESTDIR'] + env['GO_PKGROOT'],
-		      env['DESTDIR'] + env['ENV']['GOBIN']])
+env.Alias('install', [env['DESTDIR'] + env['GO_PKGROOT'] +
+	"/ancientsolutions.com", env['DESTDIR'] + env['ENV']['GOBIN']])
 env.Alias('install-bin', [env['DESTDIR'] + env['ENV']['GOBIN']])
-env.Alias('install-libs', [env['DESTDIR'] + env['GO_PKGROOT']])
+env.Alias('install-libs', [env['DESTDIR'] + "/" + env['GO_PKGROOT'] +
+	"/ancientsolutions.com"])
 
 opts.Save('options.conf', env)
