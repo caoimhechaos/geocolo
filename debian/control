@@ -1,0 +1,19 @@
+Source: go-geocolo
+Section: devel
+Priority: extra
+Maintainer: Caoimhe Chaos <caoimhechaos@protonmail.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.3
+Homepage: http://git.ancient-solutions.com/cgi-bin/gitweb.cgi?p=nettools/geocolo.git;a=summary
+Vcs-Git: http://git.ancient-solutions.com/nettools/geocolo.git
+Vcs-Browser: http://git.ancient-solutions.com/cgi-bin/gitweb.cgi?p=nettools/geocolo.git;a=summary
+
+Package: go-geocolo
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Go library to determine the closest countries to a given point.
+
+Package: geocolod
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: RPC service to determine the closest countries to a given point.
