@@ -61,6 +61,42 @@ message GeoProximityResponse {
 	repeated GeoProximityDetail full_map = 2;
 }
 
+// Request to determine which IP is geographically closest to the one
+// given in origin.
+message GeoProximityByIPRequest {
+	// IP to which the closest match should be found.
+	required string origin = 1;
+
+	// Whether or not to fill the distance vector data into the
+	// response.
+	required bool detailed_response = 2 [default = false];
+
+	// A list of IP addresses to consider.
+	repeated string candidates = 3;
+
+	// The maximum distance from the first result in which we
+	// still want to add results. If you set this to 0, only
+	// results with the exact same distance will be reported.
+	required double max_distance = 4 [default = 0.0];
+}
+
+// Geoproximity data for a specific IP.
+message GeoProximityByIPDetail {
+	required string ip = 1;
+	required double distance = 2;
+}
+
+// Response giving the closest IP and potentially distance vector
+// data.
+message GeoProximityByIPResponse {
+	// The IPs which were determined to be geographically closest.
+	repeated string closest = 1;
+
+	// If a detailed response was requested, this will contain a
+	// list of all candidate IPs and their proximity data.
+	repeated GeoProximityByIPDetail full_map = 2;
+}
+
 // Configuration for the GeoProximityService. Contains mainly the
 // PostgreSQL connection parameters.
 message GeoProximityServiceConfig {
@@ -70,8 +106,10 @@ message GeoProximityServiceConfig {
 	required string host = 4;
 	required int32 port = 5;
 	optional string password = 6;
+	optional string geoip_path = 7;
 }
 
 service GeoProximityService {
 	rpc GetProximity (GeoProximityRequest) returns (GeoProximityResponse);
+	rpc GetProximityByIP (GeoProximityByIPRequest) returns (GeoProximityByIPResponse);
 }
