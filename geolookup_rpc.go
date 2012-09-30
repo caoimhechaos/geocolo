@@ -34,16 +34,19 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/bmizerany/pq"
+	"github.com/nranchev/libgeo"
 	"strings"
 )
 
 type GeoProximityService struct {
 	conn *sql.DB
+	gi   *libgeo.GeoIP
 }
 
 func NewGeoProximityService(
 	config *GeoProximityServiceConfig) (*GeoProximityService, error) {
 	var c *sql.DB
+	var gi *libgeo.GeoIP
 	var err error
 	var dsn string
 
@@ -63,8 +66,16 @@ func NewGeoProximityService(
 		return nil, err
 	}
 
+	if config.GeoipPath != nil {
+		gi, err = libgeo.Load(*config.GeoipPath)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &GeoProximityService{
 		conn: c,
+		gi: gi,
 	}, nil
 }
 
@@ -130,6 +141,133 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 
 		if *req.DetailedResponse {
 			res.FullMap = append(res.FullMap, detail)
+		}
+	}
+
+	return nil
+}
+
+// Request which list of destination IPs are closest to a given source
+// IP. Takes a radius around which results are returned but we always
+// return at least one.
+func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
+	res *GeoProximityByIPResponse) error {
+	var addrlocations = make(map[string][]*GeoProximityByIPDetail)
+	var locdata []string = make([]string, 0)
+	var maxdistance float64
+	var loc *libgeo.Location
+
+	var fullsql string
+	var rows *sql.Rows
+	var initclosest int
+	var err error
+
+	if self.gi == nil {
+		return errors.New("GeoIP not loaded")
+	}
+
+	if req.Origin == nil {
+		return errors.New("No origin specified")
+	}
+
+	// First, determine the geodata for all of the given IPs and
+	// sort them into a map.
+	for _, addr := range req.Candidates {
+		loc = self.gi.GetLocationByIP(addr)
+
+		if loc == nil {
+			// No country data? Always return…
+			res.Closest = append(res.Closest, addr)
+		} else {
+			var cc string = strings.ToUpper(
+				loc.CountryCode)
+			var detail *GeoProximityByIPDetail =
+				new(GeoProximityByIPDetail)
+			var ok bool
+
+			detail.Ip = new(string)
+			*detail.Ip = addr
+
+			_, ok = addrlocations[cc]
+			if !ok {
+				addrlocations[cc] =
+					make([]*GeoProximityByIPDetail,
+					0)
+			}
+
+			addrlocations[cc] =
+				append(addrlocations[cc], detail)
+		}
+	}
+
+	initclosest = len(res.Closest)
+
+	for cc, _ := range addrlocations {
+		locdata = append(locdata, "'" + cc + "'")
+	}
+
+	fullsql = strings.Join(locdata, ",")
+
+	// Now let's figure out where the request came from.
+	// TODO(tonnerre): Handle RFC1918 IPs.
+	loc = self.gi.GetLocationByIP(*req.Origin)
+
+	if loc == nil {
+		// Fail open: return all IPs.
+		// TODO(tonnerre): Filter out RFC1918 IPs.
+		res.Closest = req.Candidates
+		return nil
+	}
+
+	rows, err = self.conn.Query("SELECT s.iso_a2, distance(" +
+		"s.the_geom, (SELECT g.the_geom FROM geoborders g " +
+		"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s " +
+		"WHERE s.iso_a2 IN ( " + fullsql + " ) ORDER BY " +
+		"dist ASC", strings.ToUpper(loc.CountryCode))
+	if err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		var country string
+		var distance float64
+		var detail *GeoProximityByIPDetail
+
+		err = rows.Scan(&country, &distance)
+		if err != nil {
+			return err
+		}
+
+		if country != loc.CountryCode {
+			distance += 0.01
+		}
+
+		// Go RPC hates 0 values :S
+		if distance == 0 {
+			distance += 0.001
+		}
+
+		for _, detail = range addrlocations[country] {
+			detail.Distance = new(float64)
+			*detail.Distance = distance
+
+			if len(res.Closest) == initclosest {
+				maxdistance = distance
+
+				if req.MaxDistance != nil {
+					maxdistance +=
+						*req.MaxDistance
+				}
+			}
+
+			if distance <= maxdistance {
+				res.Closest = append(res.Closest,
+					*detail.Ip)
+			}
+
+			if *req.DetailedResponse {
+				res.FullMap = append(res.FullMap, detail)
+			}
 		}
 	}
 

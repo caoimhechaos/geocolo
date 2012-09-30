@@ -43,9 +43,9 @@ import (
 
 func main() {
 	var endpoint, uri, buri, origin, candidates string
-	var req geocolo.GeoProximityRequest
-	var res geocolo.GeoProximityResponse
+	var maxdistance float64
 	var client *rpc.Client
+	var mode string
 	var conn net.Conn
 	var detailed bool
 	var err error
@@ -60,6 +60,10 @@ func main() {
 		"Country which we're looking for close countries for")
 	flag.StringVar(&candidates, "candidates", "",
 		"Comma separated list of countries to consider")
+	flag.StringVar(&mode, "mode", "country",
+		"Method to contact (country or ip)")
+	flag.Float64Var(&maxdistance, "max-distance", 0,
+		"Maximum distance from the closest IP to consider")
 	flag.BoolVar(&detailed, "detailed", false,
 		"Whether to give a detailed response")
 	flag.Parse()
@@ -75,42 +79,73 @@ func main() {
 	if err != nil {
 		log.Fatal("Error connecting to ", endpoint, ": ", err.Error())
 	}
-
-	if len(candidates) > 0 {
-		req.Candidates = strings.Split(candidates, ",")
-	}
-
-	req.Origin = &origin
-	req.DetailedResponse = &detailed
-
 	client = rpc.NewClient(conn)
-	err = client.Call("GeoProximityService.GetProximity", req, &res)
-	if err != nil {
-		log.Fatal("Error sending proximity request: ", err.Error())
-	}
 
-	if res.Closest == nil {
-		log.Fatal("Failed to fetch closest country")
-	} else {
-		fmt.Printf("Closest country: %s\n", *res.Closest)
-	}
+	if mode == "country" {
+		var req geocolo.GeoProximityRequest
+		var res geocolo.GeoProximityResponse
 
-	for _, detail := range res.FullMap {
-		if detail == nil {
-			log.Print("Error: detail is nil?")
-		} else if detail.Country == nil {
-			log.Print("Error: country is nil?")
-			if detail.Distance != nil {
-				log.Printf("(distance was %f)",
+		if len(candidates) > 0 {
+			req.Candidates = strings.Split(candidates, ",")
+		}
+
+		req.Origin = &origin
+		req.DetailedResponse = &detailed
+
+		err = client.Call("GeoProximityService.GetProximity", req,
+			&res)
+		if err != nil {
+			log.Fatal("Error sending proximity request: ",
+				err.Error())
+		}
+
+		if res.Closest == nil {
+			log.Fatal("Failed to fetch closest country")
+		} else {
+			fmt.Printf("Closest country: %s\n", *res.Closest)
+		}
+
+		for _, detail := range res.FullMap {
+			if detail == nil {
+				log.Print("Error: detail is nil?")
+			} else if detail.Country == nil {
+				log.Print("Error: country is nil?")
+				if detail.Distance != nil {
+					log.Printf("(distance was %f)",
+						*detail.Distance)
+				}
+			} else if detail.Distance == nil {
+				log.Print("Error: distance is nil?")
+				if detail.Country != nil {
+					log.Printf("(country was %s)", *detail.Country)
+				}
+			} else {
+				fmt.Printf("Country %s: distance %f\n", *detail.Country,
 					*detail.Distance)
 			}
-		} else if detail.Distance == nil {
-			log.Print("Error: distance is nil?")
-			if detail.Country != nil {
-				log.Printf("(country was %s)", *detail.Country)
-			}
-		} else {
-			fmt.Printf("Country %s: distance %f\n", *detail.Country,
+		}
+	} else if mode == "ip" {
+		var req geocolo.GeoProximityByIPRequest
+		var res geocolo.GeoProximityByIPResponse
+
+		req.Candidates = strings.Split(candidates, ",")
+		req.DetailedResponse = &detailed
+		req.Origin = &origin
+		req.MaxDistance = &maxdistance
+
+		err = client.Call("GeoProximityService.GetProximityByIP",
+			req, &res)
+		if err != nil {
+			log.Fatal("Error sending proximity request: ",
+				err.Error())
+		}
+
+		for _, addr := range res.Closest {
+			fmt.Printf("Close IP: %s\n", addr)
+		}
+
+		for _, detail := range res.FullMap {
+			fmt.Printf("IP: %s, distance: %f\n", *detail.Ip,
 				*detail.Distance)
 		}
 	}
