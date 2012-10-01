@@ -35,20 +35,54 @@ import (
 	"fmt"
 	_ "github.com/bmizerany/pq"
 	"github.com/nranchev/libgeo"
+	"net"
 	"strings"
 )
 
+var (
+	addr192 = net.IPv4(192, 168, 0, 0)
+	addr172 = net.IPv4(172, 16, 0, 0)
+	addr10 = net.IPv4(10, 0, 0, 0)
+
+	mask8 = net.IPv4Mask(255, 0, 0, 0)
+	mask16 = net.IPv4Mask(255, 255, 0, 0)
+
+	net192 = net.IPNet{
+		IP: addr192,
+		Mask: mask16,
+	}
+	net172 = net.IPNet{
+		IP: addr172,
+		Mask: mask16,
+	}
+	net10 = net.IPNet{
+		IP: addr10,
+		Mask: mask8,
+	}
+	)
+
 type GeoProximityService struct {
-	conn *sql.DB
-	gi   *libgeo.GeoIP
+	conn            *sql.DB
+	gi              *libgeo.GeoIP
+	rfc1918_country string
+}
+
+func isRFC1918(addr string) bool {
+	var ip net.IP = net.ParseIP(addr)
+
+	if ip.To4() == nil {
+		return false
+	}
+	return net192.Contains(ip) || net172.Contains(ip) || net10.Contains(ip)
 }
 
 func NewGeoProximityService(
 	config *GeoProximityServiceConfig) (*GeoProximityService, error) {
-	var c *sql.DB
 	var gi *libgeo.GeoIP
-	var err error
 	var dsn string
+	var rfc1918 string
+	var c *sql.DB
+	var err error
 
 	dsn = fmt.Sprintf("user=%s dbname=%s host=%s port=%d",
 		*config.User, *config.Dbname, *config.Host, *config.Port)
@@ -73,9 +107,18 @@ func NewGeoProximityService(
 		}
 	}
 
+	if config.Rfc1918Country != nil {
+		rfc1918 = strings.ToUpper(*config.Rfc1918Country)
+	}
+
+	if rfc1918 == "" {
+		rfc1918 = "CH"
+	}
+
 	return &GeoProximityService{
 		conn: c,
 		gi: gi,
+		rfc1918_country: rfc1918,
 	}, nil
 }
 
@@ -156,6 +199,7 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 	var locdata []string = make([]string, 0)
 	var maxdistance float64
 	var loc *libgeo.Location
+	var origin string
 
 	var fullsql string
 	var rows *sql.Rows
@@ -208,22 +252,27 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 
 	fullsql = strings.Join(locdata, ",")
 
-	// Now let's figure out where the request came from.
-	// TODO(tonnerre): Handle RFC1918 IPs.
-	loc = self.gi.GetLocationByIP(*req.Origin)
+	if isRFC1918(*req.Origin) {
+		origin = self.rfc1918_country
+	} else {
+		// Now let's figure out where the request came from.
+		// TODO(tonnerre): Handle RFC1918 IPs.
+		loc = self.gi.GetLocationByIP(*req.Origin)
 
-	if loc == nil {
-		// Fail open: return all IPs.
-		// TODO(tonnerre): Filter out RFC1918 IPs.
-		res.Closest = req.Candidates
-		return nil
+		if loc == nil {
+			// Fail open: return all IPs.
+			// TODO(tonnerre): Filter out RFC1918 IPs.
+			res.Closest = req.Candidates
+			return nil
+		}
+		origin = strings.ToUpper(loc.CountryCode)
 	}
 
 	rows, err = self.conn.Query("SELECT s.iso_a2, distance(" +
 		"s.the_geom, (SELECT g.the_geom FROM geoborders g " +
 		"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s " +
 		"WHERE s.iso_a2 IN ( " + fullsql + " ) ORDER BY " +
-		"dist ASC", strings.ToUpper(loc.CountryCode))
+		"dist ASC", origin)
 	if err != nil {
 		return err
 	}
@@ -238,7 +287,7 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 			return err
 		}
 
-		if country != loc.CountryCode {
+		if country != origin {
 			distance += 0.01
 		}
 
