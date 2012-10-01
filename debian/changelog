@@ -1,3 +1,10 @@
+go-geocolo (0.1-1) unstable; urgency=low
+
+  * First pre-release version
+  * Added support to sort IPs by distance
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Sun, 30 Sep 2012 23:09:36 +0200
+
 go-geocolo (0.20120928-1) unstable; urgency=low
 
   * Initial release
