@@ -106,7 +106,14 @@ message GeoProximityServiceConfig {
 	required string host = 4;
 	required int32 port = 5;
 	optional string password = 6;
+
+	// Path to the GeoIP database file.
 	optional string geoip_path = 7;
+
+	// Country to geolocate RFC1918 source IPs to (typically used
+	// when ATC is run inside a local network). RFC1918 destination
+	// IPs will only be returned to RFC1918 source IPs though.
+	required string rfc1918_country = 8 [default = "CH"];
 }
 
 service GeoProximityService {
