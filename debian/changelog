@@ -1,3 +1,10 @@
+go-geocolo (0.1.1-1) unstable; urgency=low
+
+  * Added special handling for RFC1918 IPs (the service owner should know
+    where they come from).
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Mon, 01 Oct 2012 04:02:52 +0200
+
 go-geocolo (0.1-1) unstable; urgency=low
 
   * First pre-release version
