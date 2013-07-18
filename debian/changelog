@@ -1,3 +1,9 @@
+go-geocolo (0.1.1-7) unstable; urgency=low
+
+  * Fix detection of whether geocolod is already running
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Fri, 19 Jul 2013 00:37:24 +0200
+
 go-geocolo (0.1.1-6) unstable; urgency=low
 
   * Declare dependencies correctly

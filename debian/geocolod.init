@@ -35,7 +35,7 @@ fi
 # The real work of an init script
 case "$1" in
 start)
-	pidofproc $DAEMON >/dev/null
+	pidofproc $NAME >/dev/null
 	status=$?
 	if [ $status -eq 0 ]; then
 		log_success_msg "$NAME is already running"
@@ -61,7 +61,7 @@ restart|force-reload)
 	echo "."
 	;;
 status)
-	pidofproc $DAEMON >/dev/null
+	pidofproc $NAME >/dev/null
 	status=$?
 	if [ $status -eq 0 ]; then
 		log_success_msg "$NAME is running"
