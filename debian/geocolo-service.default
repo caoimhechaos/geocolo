@@ -1,0 +1,5 @@
+#
+# GEOCOLO_SERVICE_FLAGS specifies the flags to pass to the geocolo-service
+# binary.
+#
+GEOCOLO_SERVICE_FLAGS=""
