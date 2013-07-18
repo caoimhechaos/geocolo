@@ -1,3 +1,9 @@
+go-geocolo (0.1.1-4) unstable; urgency=low
+
+  * Also, install the init script.
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Thu, 18 Jul 2013 16:06:26 +0200
+
 go-geocolo (0.1.1-3) unstable; urgency=low
 
   * Add an init script.
