@@ -1,3 +1,9 @@
+go-geocolo (0.1.1-6) unstable; urgency=low
+
+  * Declare dependencies correctly
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Fri, 19 Jul 2013 00:22:29 +0200
+
 go-geocolo (0.1.1-5) unstable; urgency=low
 
   * Make the init script read the right defaults file

@@ -15,5 +15,5 @@ Description: Go library to determine the closest countries to a given point.
 
 Package: geocolod
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, geoip-database
 Description: RPC service to determine the closest countries to a given point.
