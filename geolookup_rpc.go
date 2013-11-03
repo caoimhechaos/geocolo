@@ -33,8 +33,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	_ "github.com/bmizerany/pq"
-	"github.com/nranchev/libgeo"
+	_ "github.com/lib/pq"
+	libgeo "github.com/nranchev/go-libGeoIP"
 	"net"
 	"strings"
 )
