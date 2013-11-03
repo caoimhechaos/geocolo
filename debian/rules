@@ -5,7 +5,7 @@ export DH_VERBOSE=1
 
 # DH_GOPKG is the upstream path which you would normally “go get”.
 # Using it allows us to build applications without patching locations.
-export DH_GOPKG := ancient-solutions.com/geocolo
+export DH_GOPKG := ancient-solutions.com/net/geocolo
 
 %:
 	dh $@ --buildsystem=golang --with=golang
