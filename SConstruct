@@ -18,11 +18,11 @@ geocolo = env.Go('geocolo', ['geolookup_rpc.go', 'geocolo_types.pb.go'])
 env.Requires(geocolo, proto_files)
 pack = env.GoPack('ancient-solutions.com/net/geocolo', geocolo)
 
-service = env.Go('geocolo_service', ['service/geocolo_service.go'])
+service = env.Go('geocolo_service', ['geocolo-service/geocolo_service.go'])
 env.Requires(service, pack)
 server = env.GoProgram('geocolo-service', service)
 
-rpcclient = env.Go('geocolo_client', ['client/geocolo_client.go'])
+rpcclient = env.Go('geocolo_client', ['geocolo-client/geocolo_client.go'])
 env.Requires(rpcclient, pack)
 client = env.GoProgram('geocolo-client', rpcclient)
 
