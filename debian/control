@@ -1,8 +1,9 @@
-Source: go-geocolo
+Source: golang-geocolo
 Section: devel
 Priority: extra
 Maintainer: Caoimhe Chaos <caoimhechaos@protonmail.com>
-Build-Depends: debhelper (>= 9)
+Build-Depends: debhelper (>= 9), golang-go, dh-golang, golang-pq-dev,
+ golang-libgeoip-dev, golang-goprotobuf-dev
 Standards-Version: 3.9.3
 Homepage: http://git.ancient-solutions.com/cgi-bin/gitweb.cgi?p=nettools/geocolo.git;a=summary
 Vcs-Git: http://git.ancient-solutions.com/nettools/geocolo.git
