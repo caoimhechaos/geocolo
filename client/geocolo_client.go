@@ -30,8 +30,8 @@
 package main
 
 import (
-	"ancientsolutions.com/geocolo"
-	"ancientsolutions.com/urlconnection"
+	"ancient-solutions.com/net/geocolo"
+	"ancient-solutions.com/net/urlconnection"
 	"flag"
 	"fmt"
 	"log"
