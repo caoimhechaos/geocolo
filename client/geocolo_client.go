@@ -38,8 +38,8 @@ import (
 	"os"
 	"strings"
 
-	"ancientsolutions.com/geocolo"
-	"ancientsolutions.com/urlconnection"
+	"ancient-solutions.com/net/geocolo"
+	"ancient-solutions.com/net/urlconnection"
 )
 
 func main() {

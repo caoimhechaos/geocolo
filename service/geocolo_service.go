@@ -37,8 +37,8 @@ import (
 	"net/rpc"
 	"os"
 
-	"ancientsolutions.com/doozer/exportedservice"
-	"ancientsolutions.com/geocolo"
+	"ancient-solutions.com/doozer/exportedservice"
+	"ancient-solutions.com/net/geocolo"
 	"code.google.com/p/goprotobuf/proto"
 )
 
