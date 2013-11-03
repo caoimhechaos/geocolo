@@ -3,15 +3,16 @@ Section: devel
 Priority: extra
 Maintainer: Caoimhe Chaos <caoimhechaos@protonmail.com>
 Build-Depends: debhelper (>= 9), golang-go, dh-golang, golang-pq-dev,
- golang-libgeoip-dev, golang-goprotobuf-dev
+ golang-libgeoip-dev, golang-goprotobuf-dev, golang-urlconnection-dev
 Standards-Version: 3.9.3
 Homepage: http://git.ancient-solutions.com/cgi-bin/gitweb.cgi?p=nettools/geocolo.git;a=summary
 Vcs-Git: http://git.ancient-solutions.com/nettools/geocolo.git
 Vcs-Browser: http://git.ancient-solutions.com/cgi-bin/gitweb.cgi?p=nettools/geocolo.git;a=summary
 
-Package: go-geocolo
+Package: golang-geocolo-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, golang-libgeoip-dev,
+ golang-goprotobuf-dev, golang-urlconnection-dev
 Description: Go library to determine the closest countries to a given point.
 
 Package: geocolod
