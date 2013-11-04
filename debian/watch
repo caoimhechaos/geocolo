@@ -1,0 +1,3 @@
+version=3
+opts=filenamemangle=s/.+\/v?(\d\S*)\.tar\.gz/geocolo-$1.tar.gz/ \
+  https://github.com/caoimhechaos/geocolo/tags .*/geocolo-(\d\S*)\.tar\.gz

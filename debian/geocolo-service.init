@@ -16,21 +16,15 @@
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/bin/geocolo-service
 DESC="geocolo-service geolocation services"
-NAME=geocolod
+NAME=geocolo-service
 
 # Exit if the daemon does not exist (anymore)
 test -f $DAEMON || exit 0
 
 . /lib/lsb/init-functions
 
-# Check if geocolo-service is configured or not
-if [ ! -f "/etc/default/${NAME}" ]
-then
-	log_failure_msg "/etc/default/${NAME} not found"
-	exit 1
-fi
-
-. "/etc/default/${NAME}"
+GEOCOLO_SERVICE_FLAGS=""
+[ -f "/etc/default/${NAME}" ] && . "/etc/default/${NAME}"
 
 # The real work of an init script
 case "$1" in

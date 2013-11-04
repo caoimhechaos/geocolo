@@ -3,19 +3,38 @@ Section: devel
 Priority: extra
 Maintainer: Caoimhe Chaos <caoimhechaos@protonmail.com>
 Build-Depends: debhelper (>= 9), golang-go, dh-golang, golang-pq-dev,
- golang-libgeoip-dev, golang-goprotobuf-dev, golang-urlconnection-dev
-Standards-Version: 3.9.3
+ golang-libgeoip-dev, golang-goprotobuf-dev, golang-urlconnection-dev,
+ golang-doozer-exportedservice-dev, protobuf-compiler
+Standards-Version: 3.9.4
 Homepage: http://git.ancient-solutions.com/cgi-bin/gitweb.cgi?p=nettools/geocolo.git;a=summary
 Vcs-Git: http://git.ancient-solutions.com/nettools/geocolo.git
 Vcs-Browser: http://git.ancient-solutions.com/cgi-bin/gitweb.cgi?p=nettools/geocolo.git;a=summary
 
 Package: golang-geocolo-dev
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, golang-libgeoip-dev,
- golang-goprotobuf-dev, golang-urlconnection-dev
-Description: Go library to determine the closest countries to a given point.
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, golang-pq-dev,
+ golang-libgeoip-dev, golang-goprotobuf-dev, golang-urlconnection-dev,
+ golang-doozer-exportedservice-dev
+Description: Go library to determine the closest countries to a given point
+ Go library for looking up close destinations by IP address or country code.
+ Given a number of candidate countries, it identifies the country form a list
+ which is closest to the given one.
+ .
+ If desired, it can also return the exact geographic distance of the involved
+ countries, so it can be used in weighting algorithms.
 
-Package: geocolod
+Package: geocolo-service
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, geoip-database
-Description: RPC service to determine the closest countries to a given point.
+Description: RPC service to determine the closest countries to a given point
+ Contains geocolo-service, the geo-colocation service. It can be used to
+ determine, given a number of candidate countries, the country which is closest
+ to the given one. Lookups can be done by country code or by IP.
+
+Package: geocolo-client
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Client binary for geocolo-service to query distances
+ Contains geocolo-client, the client for the geo-colocation service. It can be
+ used to determine, given a number of candidate countries, the country which is
+ closest to the given one. Lookups can be done by country code or by IP.

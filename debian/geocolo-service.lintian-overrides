@@ -1,0 +1,4 @@
+# The Go compiler is currently unable to produce read-only relocations
+# (it produces static binaries).
+statically-linked-binary usr/bin/geocolo-service
+hardening-no-relro usr/bin/geocolo-service
