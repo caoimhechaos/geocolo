@@ -183,7 +183,7 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 			res.Closest = detail.Country
 		}
 
-		if *req.DetailedResponse {
+		if req.DetailedResponse != nil && *req.DetailedResponse {
 			res.FullMap = append(res.FullMap, detail)
 		}
 	}
@@ -314,7 +314,7 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 					*detail.Ip)
 			}
 
-			if *req.DetailedResponse {
+			if req.DetailedResponse != nil && *req.DetailedResponse {
 				res.FullMap = append(res.FullMap, detail)
 			}
 		}
