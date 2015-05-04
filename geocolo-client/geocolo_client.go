@@ -39,7 +39,7 @@ import (
 	"strings"
 
 	"ancient-solutions.com/net/geocolo"
-	"ancient-solutions.com/net/urlconnection"
+	"github.com/caoimhechaos/go-urlconnection"
 )
 
 func main() {
