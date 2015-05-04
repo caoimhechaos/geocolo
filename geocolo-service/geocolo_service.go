@@ -30,7 +30,7 @@
 package main
 
 import (
-	"ancient-solutions.com/doozer/exportedservice"
+	"github.com/tonnerre/golang-doozer-exportedservice"
 	"ancient-solutions.com/net/geocolo"
 	"code.google.com/p/goprotobuf/proto"
 	"flag"

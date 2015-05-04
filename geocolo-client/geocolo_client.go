@@ -31,7 +31,7 @@ package main
 
 import (
 	"ancient-solutions.com/net/geocolo"
-	"ancient-solutions.com/net/urlconnection"
+	"github.com/tonnerre/go-urlconnection"
 	"flag"
 	"fmt"
 	"log"
