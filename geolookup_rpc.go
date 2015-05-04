@@ -42,24 +42,24 @@ import (
 var (
 	addr192 = net.IPv4(192, 168, 0, 0)
 	addr172 = net.IPv4(172, 16, 0, 0)
-	addr10 = net.IPv4(10, 0, 0, 0)
+	addr10  = net.IPv4(10, 0, 0, 0)
 
-	mask8 = net.IPv4Mask(255, 0, 0, 0)
+	mask8  = net.IPv4Mask(255, 0, 0, 0)
 	mask16 = net.IPv4Mask(255, 255, 0, 0)
 
 	net192 = net.IPNet{
-		IP: addr192,
+		IP:   addr192,
 		Mask: mask16,
 	}
 	net172 = net.IPNet{
-		IP: addr172,
+		IP:   addr172,
 		Mask: mask16,
 	}
 	net10 = net.IPNet{
-		IP: addr10,
+		IP:   addr10,
 		Mask: mask8,
 	}
-	)
+)
 
 type GeoProximityService struct {
 	conn            *sql.DB
@@ -116,8 +116,8 @@ func NewGeoProximityService(
 	}
 
 	return &GeoProximityService{
-		conn: c,
-		gi: gi,
+		conn:            c,
+		gi:              gi,
 		rfc1918_country: rfc1918,
 	}, nil
 }
@@ -142,21 +142,21 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 				value[0] <= 'Z' && value[1] >= 'A' &&
 				value[1] <= 'Z' {
 				valuecollection = append(valuecollection,
-					"'" + value + "'")
+					"'"+value+"'")
 			}
 		}
 
 		fullsql = strings.Join(valuecollection, ",")
 
-		rows, err = self.conn.Query("SELECT s.iso_a2, distance(" +
-			"s.the_geom, (SELECT g.the_geom FROM geoborders g " +
-			"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s " +
-			"WHERE s.iso_a2 IN ( " + fullsql + " ) ORDER BY " +
+		rows, err = self.conn.Query("SELECT s.iso_a2, distance("+
+			"s.the_geom, (SELECT g.the_geom FROM geoborders g "+
+			"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s "+
+			"WHERE s.iso_a2 IN ( "+fullsql+" ) ORDER BY "+
 			"dist ASC", strings.ToUpper(*req.Origin))
 	} else {
-		rows, err = self.conn.Query("SELECT s.iso_a2, distance(" +
-			"s.the_geom, (SELECT g.the_geom FROM geoborders g " +
-			"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s " +
+		rows, err = self.conn.Query("SELECT s.iso_a2, distance("+
+			"s.the_geom, (SELECT g.the_geom FROM geoborders g "+
+			"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s "+
 			"ORDER BY dist ASC", strings.ToUpper(*req.Origin))
 	}
 	if err != nil {
@@ -182,7 +182,7 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 			res.Closest = detail.Country
 		}
 
-		if *req.DetailedResponse {
+		if req.DetailedResponse != nil && *req.DetailedResponse {
 			res.FullMap = append(res.FullMap, detail)
 		}
 	}
@@ -225,8 +225,7 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 		} else {
 			var cc string = strings.ToUpper(
 				loc.CountryCode)
-			var detail *GeoProximityByIPDetail =
-				new(GeoProximityByIPDetail)
+			var detail *GeoProximityByIPDetail = new(GeoProximityByIPDetail)
 			var ok bool
 
 			detail.Ip = new(string)
@@ -236,7 +235,7 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 			if !ok {
 				addrlocations[cc] =
 					make([]*GeoProximityByIPDetail,
-					0)
+						0)
 			}
 
 			addrlocations[cc] =
@@ -247,7 +246,7 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 	initclosest = len(res.Closest)
 
 	for cc, _ := range addrlocations {
-		locdata = append(locdata, "'" + cc + "'")
+		locdata = append(locdata, "'"+cc+"'")
 	}
 
 	fullsql = strings.Join(locdata, ",")
@@ -268,10 +267,10 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 		origin = strings.ToUpper(loc.CountryCode)
 	}
 
-	rows, err = self.conn.Query("SELECT s.iso_a2, distance(" +
-		"s.the_geom, (SELECT g.the_geom FROM geoborders g " +
-		"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s " +
-		"WHERE s.iso_a2 IN ( " + fullsql + " ) ORDER BY " +
+	rows, err = self.conn.Query("SELECT s.iso_a2, distance("+
+		"s.the_geom, (SELECT g.the_geom FROM geoborders g "+
+		"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s "+
+		"WHERE s.iso_a2 IN ( "+fullsql+" ) ORDER BY "+
 		"dist ASC", origin)
 	if err != nil {
 		return err
@@ -314,7 +313,7 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 					*detail.Ip)
 			}
 
-			if *req.DetailedResponse {
+			if req.DetailedResponse != nil && *req.DetailedResponse {
 				res.FullMap = append(res.FullMap, detail)
 			}
 		}
