@@ -114,6 +114,17 @@ message GeoProximityServiceConfig {
 	// when ATC is run inside a local network). RFC1918 destination
 	// IPs will only be returned to RFC1918 source IPs though.
 	required string rfc1918_country = 8 [default = "CH"];
+
+	// List of etcd servers to contact.
+	repeated string etcd_url = 9;
+
+	// SSL configuration.
+	optional string ca_certificate = 10;
+	optional string service_certificate = 11;
+	optional string service_key = 12;
+
+	// Name the service will be exported as.
+	required string exported_service_name = 13;
 }
 
 service GeoProximityService {
