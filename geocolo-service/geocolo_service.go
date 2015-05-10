@@ -37,16 +37,16 @@ import (
 	"net/rpc"
 	"os"
 
-	"ancient-solutions.com/net/geocolo"
 	"code.google.com/p/goprotobuf/proto"
+	"github.com/caoimhechaos/geocolo"
 )
 
 func main() {
 	var service *geocolo.GeoProximityService
 	var exporter *exportedservice.ServiceExporter
 	var config *geocolo.GeoProximityServiceConfig
-	var configpath, doozer_uri, boot_uri string
-	var listen_net, listen_ip, listen_servicename string
+	var configpath string
+	var listen_net, listen_ip string
 	var listener net.Listener
 	var configfile *os.File
 	var bdata []byte
@@ -54,17 +54,10 @@ func main() {
 
 	flag.StringVar(&configpath, "config", "",
 		"Path to the geocolo service configuration")
-	flag.StringVar(&doozer_uri, "doozer-uri", os.Getenv("DOOZER_URI"),
-		"URI of the Doozer service")
-	flag.StringVar(&boot_uri, "doozer-boot-uri",
-		os.Getenv("DOOZER_BOOT_URI"),
-		"Boot URI of the Doozer service")
 	flag.StringVar(&listen_net, "listen-proto", "tcp",
 		"Protocol type to listen on (e.g. tcp)")
 	flag.StringVar(&listen_ip, "listen-addr", "[::]",
 		"IP address to listen on")
-	flag.StringVar(&listen_servicename, "export-service", "geocolo",
-		"Service name to export as")
 	flag.Parse()
 
 	config = new(geocolo.GeoProximityServiceConfig)
@@ -98,13 +91,22 @@ func main() {
 	rpc.Register(service)
 	rpc.HandleHTTP()
 
-	exporter, err = exportedservice.NewExporter(doozer_uri, boot_uri)
-	if err != nil {
-		log.Fatal("Error opening port exporter: ", err)
+	if config.ServiceCertificate != nil && config.ServiceKey != nil {
+		exporter, err = exportedservice.NewTLSExporter(
+			config.EtcdUrl, *config.ServiceCertificate,
+			*config.ServiceKey, *config.CaCertificate)
+		if err != nil {
+			log.Fatal("Error opening port exporter: ", err)
+		}
+	} else {
+		exporter, err = exportedservice.NewExporter(config.EtcdUrl)
+		if err != nil {
+			log.Fatal("Error opening port exporter: ", err)
+		}
 	}
 
 	listener, err = exporter.NewExportedPort(listen_net, listen_ip,
-		listen_servicename)
+		*config.ExportedServiceName)
 	if err != nil {
 		log.Fatal("Error opening exported port: ", err)
 	}
