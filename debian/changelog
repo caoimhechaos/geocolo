@@ -1,3 +1,11 @@
+golang-geocolo (0.2-1) unstable; urgency=medium
+
+  * Migrated to etcd.
+  * Added more config values into the config file rather than the command
+    line.
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Sun, 10 May 2015 04:05:43 +0200
+
 golang-geocolo (0.1.2-1) unstable; urgency=medium
 
   * Fix a crash which occurs when the requestor doesn't set the
