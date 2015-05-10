@@ -1,3 +1,10 @@
+golang-geocolo (0.1.2-1) unstable; urgency=medium
+
+  * Fix a crash which occurs when the requestor doesn't set the
+    DetailedResponse field.
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Mon, 04 May 2015 02:21:01 +0200
+
 golang-geocolo (0.1.1-7) unstable; urgency=low
 
   * Fix detection of whether geocolod is already running
