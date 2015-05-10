@@ -99,10 +99,7 @@ func main() {
 			log.Fatal("Error opening port exporter: ", err)
 		}
 	} else {
-		exporter, err = exportedservice.NewExporter(config.EtcdUrl)
-		if err != nil {
-			log.Fatal("Error opening port exporter: ", err)
-		}
+		exporter = exportedservice.NewExporter(config.EtcdUrl)
 	}
 
 	listener, err = exporter.NewExportedPort(listen_net, listen_ip,
