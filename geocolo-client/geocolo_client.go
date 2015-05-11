@@ -30,10 +30,10 @@
 package main
 
 import (
-	"ancient-solutions.com/net/geocolo"
-	"github.com/tonnerre/go-urlconnection"
 	"flag"
 	"fmt"
+	"github.com/tonnerre/geocolo"
+	"github.com/tonnerre/go-urlconnection"
 	"log"
 	"net"
 	"net/rpc"
@@ -42,7 +42,8 @@ import (
 )
 
 func main() {
-	var endpoint, uri, buri, origin, candidates string
+	var endpoint, uri, origin, candidates string
+	var cert, key, ca string
 	var maxdistance float64
 	var client *rpc.Client
 	var mode string
@@ -52,10 +53,8 @@ func main() {
 
 	flag.StringVar(&endpoint, "endpoint", "",
 		"The service URL to connect to")
-	flag.StringVar(&uri, "doozer-uri", os.Getenv("DOOZER_URI"),
-		"Doozer URI to connect to")
-	flag.StringVar(&buri, "doozer-boot-uri", os.Getenv("DOOZER_BOOT_URI"),
-		"Doozer Boot URI to find named clusters")
+	flag.StringVar(&uri, "etcd-uri", os.Getenv("ETCD_URI"),
+		"etcd URI to connect to")
 	flag.StringVar(&origin, "origin", "",
 		"Country which we're looking for close countries for")
 	flag.StringVar(&candidates, "candidates", "",
@@ -66,11 +65,19 @@ func main() {
 		"Maximum distance from the closest IP to consider")
 	flag.BoolVar(&detailed, "detailed", false,
 		"Whether to give a detailed response")
+
+	flag.StringVar(&cert, "cert", "",
+		"Certificate for connecting (if empty, don't use encryption)")
+	flag.StringVar(&key, "key", "",
+		"Private key for connecting")
+	flag.StringVar(&ca, "ca-cert", "",
+		"CA certificate for verifying etcd and geocolo")
 	flag.Parse()
 
 	if uri != "" {
-		if err = urlconnection.SetupDoozer(buri, uri); err != nil {
-			log.Fatal("Error initializing Doozer connection to ",
+		if err = urlconnection.SetupEtcd([]string{uri},
+			cert, key, ca); err != nil {
+			log.Fatal("Error initializing etcd connection to ",
 				uri, ": ", err.Error())
 		}
 	}
