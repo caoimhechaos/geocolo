@@ -1,3 +1,9 @@
+golang-geocolo (0.2a-1) unstable; urgency=medium
+
+  * Also updated the geocolo client to use etcd.
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Mon, 11 May 2015 12:07:05 +0200
+
 golang-geocolo (0.2-1) unstable; urgency=medium
 
   * Migrated to etcd.
