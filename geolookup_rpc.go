@@ -149,14 +149,14 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 
 		fullsql = strings.Join(valuecollection, ",")
 
-		rows, err = self.conn.Query("SELECT s.iso_a2, distance("+
-			"s.the_geom, (SELECT g.the_geom FROM geoborders g "+
+		rows, err = self.conn.Query("SELECT s.iso_a2, st_distance("+
+			"s.geom, (SELECT g.geom FROM geoborders g "+
 			"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s "+
 			"WHERE s.iso_a2 IN ( "+fullsql+" ) ORDER BY "+
 			"dist ASC", strings.ToUpper(*req.Origin))
 	} else {
-		rows, err = self.conn.Query("SELECT s.iso_a2, distance("+
-			"s.the_geom, (SELECT g.the_geom FROM geoborders g "+
+		rows, err = self.conn.Query("SELECT s.iso_a2, st_distance("+
+			"s.geom, (SELECT g.geom FROM geoborders g "+
 			"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s "+
 			"ORDER BY dist ASC", strings.ToUpper(*req.Origin))
 	}
@@ -268,8 +268,8 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 		origin = strings.ToUpper(loc.CountryCode)
 	}
 
-	rows, err = self.conn.Query("SELECT s.iso_a2, distance("+
-		"s.the_geom, (SELECT g.the_geom FROM geoborders g "+
+	rows, err = self.conn.Query("SELECT s.iso_a2, st_distance("+
+		"s.geom, (SELECT g.geom FROM geoborders g "+
 		"WHERE g.iso_a2 = $1 ) ) AS dist FROM geoborders s "+
 		"WHERE s.iso_a2 IN ( "+fullsql+" ) ORDER BY "+
 		"dist ASC", origin)
