@@ -1,6 +1,6 @@
 /*-
- * Copyright (c) 2012 Caoimhe Chaos <caoimhechaos@protonmail.com>,
- *                    Ancient Solutions. All rights reserved.
+ * Copyright (c) 2012-2016 Caoimhe Chaos <caoimhechaos@protonmail.com>,
+ *                         Ancient Solutions. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,6 +38,7 @@ import (
 
 	_ "github.com/lib/pq"
 	libgeo "github.com/nranchev/go-libGeoIP"
+	"golang.org/x/net/context"
 )
 
 var (
@@ -123,13 +124,13 @@ func NewGeoProximityService(
 	}, nil
 }
 
-func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
-	res *GeoProximityResponse) error {
+func (self *GeoProximityService) GetProximity(
+	ctx context.Context,
+	req *GeoProximityRequest) (res *GeoProximityResponse, err error) {
 	var rows *sql.Rows
-	var err error
 
 	if req.Origin == nil {
-		return errors.New("No origin specified")
+		return nil, errors.New("No origin specified")
 	}
 
 	if len(req.Candidates) > 0 {
@@ -161,9 +162,10 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 			"ORDER BY dist ASC", strings.ToUpper(*req.Origin))
 	}
 	if err != nil {
-		return err
+		return
 	}
 
+	res = new(GeoProximityResponse)
 	for rows.Next() {
 		var detail *GeoProximityDetail = new(GeoProximityDetail)
 		detail.Country = new(string)
@@ -171,12 +173,11 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 
 		err = rows.Scan(detail.Country, detail.Distance)
 		if err != nil {
-			return err
+			return
 		}
 
-		// Go RPC hates 0 values :S
-		if *detail.Distance == 0 {
-			*detail.Distance -= 0.001
+		if *detail.Distance == 0 && *detail.Country != *req.Origin {
+			*detail.Distance += 0.01
 		}
 
 		if res.Closest == nil {
@@ -188,14 +189,15 @@ func (self *GeoProximityService) GetProximity(req GeoProximityRequest,
 		}
 	}
 
-	return nil
+	return
 }
 
 // Request which list of destination IPs are closest to a given source
 // IP. Takes a radius around which results are returned but we always
 // return at least one.
-func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
-	res *GeoProximityByIPResponse) error {
+func (self *GeoProximityService) GetProximityByIP(
+	ctx context.Context,
+	req *GeoProximityByIPRequest) (res *GeoProximityByIPResponse, err error) {
 	var addrlocations = make(map[string][]*GeoProximityByIPDetail)
 	var locdata []string = make([]string, 0)
 	var maxdistance float64
@@ -205,16 +207,16 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 	var fullsql string
 	var rows *sql.Rows
 	var initclosest int
-	var err error
 
 	if self.gi == nil {
-		return errors.New("GeoIP not loaded")
+		return nil, errors.New("GeoIP not loaded")
 	}
 
 	if req.Origin == nil {
-		return errors.New("No origin specified")
+		return nil, errors.New("No origin specified")
 	}
 
+	res = new(GeoProximityByIPResponse)
 	// First, determine the geodata for all of the given IPs and
 	// sort them into a map.
 	for _, addr := range req.Candidates {
@@ -263,7 +265,7 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 			// Fail open: return all IPs.
 			// TODO(caoimhe): Filter out RFC1918 IPs.
 			res.Closest = req.Candidates
-			return nil
+			return
 		}
 		origin = strings.ToUpper(loc.CountryCode)
 	}
@@ -274,7 +276,7 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 		"WHERE s.iso_a2 IN ( "+fullsql+" ) ORDER BY "+
 		"dist ASC", origin)
 	if err != nil {
-		return err
+		return
 	}
 
 	for rows.Next() {
@@ -284,16 +286,14 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 
 		err = rows.Scan(&country, &distance)
 		if err != nil {
-			return err
+			return
 		}
 
+		// Ensure neighbors of the country of origin always get a
+		// slight penalty so that same-country responses are
+		// preferred.
 		if country != origin {
 			distance += 0.01
-		}
-
-		// Go RPC hates 0 values :S
-		if distance == 0 {
-			distance += 0.001
 		}
 
 		for _, detail = range addrlocations[country] {
@@ -320,5 +320,5 @@ func (self *GeoProximityService) GetProximityByIP(req GeoProximityByIPRequest,
 		}
 	}
 
-	return nil
+	return
 }
