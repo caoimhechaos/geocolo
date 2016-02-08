@@ -1,0 +1,10 @@
+[Unit]
+Description=geocolo-service geolocation services
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/default/geocolo-service
+ExecStart=/usr/bin/geocolo-service --listen-addr=$GEOCOLO_LISTEN --config=$GEOCOLO_CONFIGPATH $GEOCOLO_SERVICE_FLAGS
+
+[Install]
+WantedBy=multi-user.target

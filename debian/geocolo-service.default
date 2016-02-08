@@ -1,5 +1,17 @@
 #
-# GEOCOLO_SERVICE_FLAGS specifies the flags to pass to the geocolo-service
+# GEOCOLO_LISTEN contains the host:port conbination to run the geocolo-service
+# on.
+#
+GEOCOLO_LISTEN=":1234"
+
+#
+# GEOCOLO_CONFIGPATH specifies the path to the configuration file for the
+# geocolo-service.
+#
+GEOCOLO_CONFIGPATH="/etc/geocolo.conf"
+
+#
+# GEOCOLO_SERVICE_FLAGS specifies other flags to pass to the geocolo-service
 # binary.
 #
 GEOCOLO_SERVICE_FLAGS=""
