@@ -4,7 +4,8 @@ Priority: extra
 Maintainer: Caoimhe Chaos <caoimhechaos@protonmail.com>
 Build-Depends: debhelper (>= 9), golang-go, dh-golang, golang-pq-dev,
  golang-libgeoip-dev, golang-goprotobuf-dev, golang-urlconnection-dev,
- golang-etcd-exportedservice-dev, protobuf-compiler
+ golang-golang-x-net-dev, golang-google-grpc-dev, golang-etcd-dev,
+ protobuf-compiler
 Standards-Version: 3.9.4
 Homepage: http://git.ancient-solutions.com/cgi-bin/gitweb.cgi?p=nettools/geocolo.git;a=summary
 Vcs-Git: http://git.ancient-solutions.com/nettools/geocolo.git
@@ -14,7 +15,7 @@ Package: golang-geocolo-dev
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, golang-pq-dev,
  golang-libgeoip-dev, golang-goprotobuf-dev, golang-urlconnection-dev,
- golang-etcd-exportedservice-dev
+ golang-golang-x-net-dev, golang-google-grpc-dev, golang-etcd-dev
 Description: Go library to determine the closest countries to a given point
  Go library for looking up close destinations by IP address or country code.
  Given a number of candidate countries, it identifies the country form a list

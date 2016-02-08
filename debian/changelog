@@ -1,3 +1,10 @@
+golang-geocolo (0.3-1) unstable; urgency=medium
+
+  * Updated SQL query to more recent postgis version.
+  * Migrated to grpc.
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Mon, 08 Feb 2016 03:56:33 +0100
+
 golang-geocolo (0.2a-1) unstable; urgency=medium
 
   * Also updated the geocolo client to use etcd.

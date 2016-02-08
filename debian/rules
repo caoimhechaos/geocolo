@@ -8,7 +8,7 @@ export DH_VERBOSE=1
 export DH_GOPKG := github.com/caoimhechaos/geocolo
 
 override_dh_auto_configure:
-	protoc --go_out=. geocolo_types.proto
+	protoc --go_out=plugins=grpc:. geocolo_types.proto
 	dh_auto_configure -O--buildsystem=golang
 
 %:
