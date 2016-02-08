@@ -1,6 +1,6 @@
 /*-
- * Copyright (c) 2012 Tonnerre Lombard <tonnerre@ancient-solutions.com>,
- *                    Ancient Solutions. All rights reserved.
+ * Copyright (c) 2012-2016 Tonnerre Lombard <tonnerre@ancient-solutions.com>,
+ *                         Ancient Solutions. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,24 +31,24 @@ package main
 
 import (
 	"code.google.com/p/goprotobuf/proto"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
 	"flag"
 	"github.com/tonnerre/geocolo"
-	"github.com/tonnerre/go-etcd-exportedservice"
+	"google.golang.org/grpc"
 	"io/ioutil"
 	"log"
 	"net"
-	"net/rpc"
-	"os"
 )
 
 func main() {
 	var service *geocolo.GeoProximityService
-	var exporter *exportedservice.ServiceExporter
+	var server *grpc.Server
 	var config *geocolo.GeoProximityServiceConfig
 	var configpath string
 	var listen_net, listen_ip string
 	var listener net.Listener
-	var configfile *os.File
 	var bdata []byte
 	var err error
 
@@ -56,31 +56,24 @@ func main() {
 		"Path to the geocolo service configuration")
 	flag.StringVar(&listen_net, "listen-proto", "tcp",
 		"Protocol type to listen on (e.g. tcp)")
-	flag.StringVar(&listen_ip, "listen-addr", "[::]",
+	flag.StringVar(&listen_ip, "listen-addr", "[::]:1234",
 		"IP address to listen on")
 	flag.Parse()
 
 	config = new(geocolo.GeoProximityServiceConfig)
-	configfile, err = os.Open(configpath)
+	bdata, err = ioutil.ReadFile(configpath)
 	if err != nil {
-		log.Fatal("Error opening ", configpath, ": ", err)
-	}
-
-	bdata, err = ioutil.ReadAll(configfile)
-	if err != nil {
-		configfile.Close()
 		log.Fatal("Error reading ", configpath, ": ", err)
 	}
 
-	err = proto.Unmarshal(bdata, config)
+	err = proto.UnmarshalText(string(bdata), config)
 	if err != nil {
-		configfile.Close()
-		log.Fatal("Error parsing ", configpath, ": ", err)
-	}
-
-	err = configfile.Close()
-	if err != nil {
-		log.Print("Error closing ", configpath, ": ", err)
+		var err2 error = proto.Unmarshal(bdata, config)
+		if err != nil {
+			log.Print("Error parsing ", configpath, " as text: ",
+				err)
+			log.Fatal("Error parsing ", configpath, ": ", err2)
+		}
 	}
 
 	service, err = geocolo.NewGeoProximityService(config)
@@ -88,25 +81,54 @@ func main() {
 		log.Fatal("Error creating GeoProximityService: ", err)
 	}
 
-	rpc.Register(service)
-	rpc.HandleHTTP()
-
 	if config.ServiceCertificate != nil && config.ServiceKey != nil {
-		exporter, err = exportedservice.NewTLSExporter(
-			config.EtcdUrl, *config.ServiceCertificate,
-			*config.ServiceKey, *config.CaCertificate)
+		var cert tls.Certificate
+		var tls_config *tls.Config
+		var root *x509.CertPool = x509.NewCertPool()
+		var cacert *x509.Certificate
+		var cablock *pem.Block
+		var cadata []byte
+
+		cert, err = tls.LoadX509KeyPair(config.GetServiceCertificate(),
+			config.GetServiceKey())
 		if err != nil {
-			log.Fatal("Error opening port exporter: ", err)
+			log.Fatal("Error loading X.509 key pair from ",
+				config.GetServiceCertificate(), " and ",
+				config.GetServiceKey(), ": ", err)
+		}
+
+		cadata, err = ioutil.ReadFile(config.GetCaCertificate())
+		if err != nil {
+			log.Fatal("Error reading CA certificate from ",
+				config.GetCaCertificate(), ": ", err)
+		}
+
+		cablock, _ = pem.Decode(cadata)
+		cacert, err = x509.ParseCertificate(cablock.Bytes)
+		if err != nil {
+			log.Fatal("Error parsing X.509 certificate ",
+				config.GetCaCertificate(), ": ", err)
+		}
+		root.AddCert(cacert)
+
+		tls_config = &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			ClientAuth:   tls.RequireAndVerifyClientCert,
+			MinVersion:   tls.VersionTLS12,
+			RootCAs:      root,
+		}
+		listener, err = tls.Listen(listen_net, listen_ip, tls_config)
+		if err != nil {
+			log.Fatal("Error listening on ", listen_ip, ": ", err)
 		}
 	} else {
-		exporter = exportedservice.NewExporter(config.EtcdUrl)
+		listener, err = net.Listen(listen_net, listen_ip)
+		if err != nil {
+			log.Fatal("Error listening on ", listen_ip, ": ", err)
+		}
 	}
 
-	listener, err = exporter.NewExportedPort(listen_net, listen_ip,
-		*config.ExportedServiceName)
-	if err != nil {
-		log.Fatal("Error opening exported port: ", err)
-	}
-
-	rpc.Accept(listener)
+	server = grpc.NewServer()
+	geocolo.RegisterGeoProximityServiceServer(server, service)
+	server.Serve(listener)
 }

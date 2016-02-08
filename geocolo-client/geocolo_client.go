@@ -1,6 +1,6 @@
 /*-
- * Copyright (c) 2012 Tonnerre Lombard <tonnerre@ancient-solutions.com>,
- *                    Ancient Solutions. All rights reserved.
+ * Copyright (c) 2012-2016 Tonnerre Lombard <tonnerre@ancient-solutions.com>,
+ *                         Ancient Solutions. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,20 +34,23 @@ import (
 	"fmt"
 	"github.com/tonnerre/geocolo"
 	"github.com/tonnerre/go-urlconnection"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"log"
-	"net"
-	"net/rpc"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
 	var endpoint, uri, origin, candidates string
 	var cert, key, ca string
 	var maxdistance float64
-	var client *rpc.Client
+	var client geocolo.GeoProximityServiceClient
 	var mode string
-	var conn net.Conn
+	var conn *grpc.ClientConn
+	var ctx context.Context = context.Background()
+	var timeout time.Duration
 	var detailed bool
 	var err error
 
@@ -72,6 +75,8 @@ func main() {
 		"Private key for connecting")
 	flag.StringVar(&ca, "ca-cert", "",
 		"CA certificate for verifying etcd and geocolo")
+	flag.DurationVar(&timeout, "timeout", 0*time.Nanosecond,
+		"Maximum time to wait for a response from the server")
 	flag.Parse()
 
 	if uri != "" {
@@ -82,15 +87,23 @@ func main() {
 		}
 	}
 
-	conn, err = urlconnection.Connect(endpoint)
+	if timeout.Nanoseconds() > 0 {
+		ctx, _ = context.WithTimeout(ctx, timeout)
+		conn, err = grpc.Dial(endpoint,
+			grpc.WithDialer(urlconnection.ConnectTimeout),
+			grpc.WithTimeout(timeout))
+	} else {
+		conn, err = grpc.Dial(endpoint,
+			grpc.WithDialer(urlconnection.ConnectTimeout))
+	}
 	if err != nil {
 		log.Fatal("Error connecting to ", endpoint, ": ", err.Error())
 	}
-	client = rpc.NewClient(conn)
+	client = geocolo.NewGeoProximityServiceClient(conn)
 
 	if mode == "country" {
 		var req geocolo.GeoProximityRequest
-		var res geocolo.GeoProximityResponse
+		var res *geocolo.GeoProximityResponse
 
 		if len(candidates) > 0 {
 			req.Candidates = strings.Split(candidates, ",")
@@ -99,8 +112,7 @@ func main() {
 		req.Origin = &origin
 		req.DetailedResponse = &detailed
 
-		err = client.Call("GeoProximityService.GetProximity", req,
-			&res)
+		res, err = client.GetProximity(ctx, &req)
 		if err != nil {
 			log.Fatal("Error sending proximity request: ",
 				err.Error())
@@ -133,15 +145,14 @@ func main() {
 		}
 	} else if mode == "ip" {
 		var req geocolo.GeoProximityByIPRequest
-		var res geocolo.GeoProximityByIPResponse
+		var res *geocolo.GeoProximityByIPResponse
 
 		req.Candidates = strings.Split(candidates, ",")
 		req.DetailedResponse = &detailed
 		req.Origin = &origin
 		req.MaxDistance = &maxdistance
 
-		err = client.Call("GeoProximityService.GetProximityByIP",
-			req, &res)
+		res, err = client.GetProximityByIP(ctx, &req)
 		if err != nil {
 			log.Fatal("Error sending proximity request: ",
 				err.Error())

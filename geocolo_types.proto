@@ -122,9 +122,6 @@ message GeoProximityServiceConfig {
 	optional string ca_certificate = 10;
 	optional string service_certificate = 11;
 	optional string service_key = 12;
-
-	// Name the service will be exported as.
-	required string exported_service_name = 13;
 }
 
 service GeoProximityService {
