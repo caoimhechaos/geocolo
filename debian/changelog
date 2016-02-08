@@ -1,3 +1,10 @@
+golang-geocolo (0.3-2) unstable; urgency=medium
+
+  * Improved init script configuration level.
+  * Added service definition for systemd.
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Mon, 08 Feb 2016 04:50:04 +0100
+
 golang-geocolo (0.3-1) unstable; urgency=medium
 
   * Updated SQL query to more recent postgis version.
