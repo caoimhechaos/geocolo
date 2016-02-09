@@ -113,7 +113,7 @@ message GeoProximityServiceConfig {
 	// Country to geolocate RFC1918 source IPs to (typically used
 	// when ATC is run inside a local network). RFC1918 destination
 	// IPs will only be returned to RFC1918 source IPs though.
-	required string rfc1918_country = 8 [default = "CH"];
+	optional string rfc1918_country = 8 [default = "CH"];
 
 	// List of etcd servers to contact.
 	repeated string etcd_url = 9;
