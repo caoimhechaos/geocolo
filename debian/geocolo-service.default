@@ -1,4 +1,9 @@
 #
+# GEOCOLO_USER specifies the user as which the geocolo service should be run.
+#
+GEOCOLO_USER="_geocolo"
+
+#
 # GEOCOLO_LISTEN contains the host:port conbination to run the geocolo-service
 # on.
 #

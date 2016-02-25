@@ -24,6 +24,8 @@ test -f $DAEMON || exit 0
 . /lib/lsb/init-functions
 
 GEOCOLO_SERVICE_FLAGS=""
+GEOCOLO_USER="_geocolo"
+
 [ -f "/etc/default/${NAME}" ] && . "/etc/default/${NAME}"
 
 # The real work of an init script
@@ -35,9 +37,9 @@ start)
 		log_success_msg "$NAME is already running"
 	else
 		log_daemon_msg "Starting $DESC" "$NAME"
-		start_daemon /usr/bin/run-as-daemon -l =logger	\
-			-p "/var/run/${NAME}.pid" -- $DAEMON 	\
-			--listen-addr=$GEOCOLO_LISTEN		\
+		start_daemon /usr/bin/run-as-daemon -l =logger		\
+			-p "/var/run/${NAME}.pid" -u "$GEOCOLO_USER"	\
+			-- $DAEMON --listen-addr=$GEOCOLO_LISTEN	\
 			--config=$GEOCOLO_CONFIGPATH $GEOCOLO_SERVICE_FLAGS
 		log_end_msg $?
 	fi
