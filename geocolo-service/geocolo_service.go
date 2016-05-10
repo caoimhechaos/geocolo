@@ -70,7 +70,7 @@ func main() {
 	err = proto.UnmarshalText(string(bdata), config)
 	if err != nil {
 		var err2 error = proto.Unmarshal(bdata, config)
-		if err != nil {
+		if err2 != nil {
 			log.Print("Error parsing ", configpath, " as text: ",
 				err)
 			log.Fatal("Error parsing ", configpath, ": ", err2)
