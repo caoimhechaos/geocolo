@@ -1,3 +1,9 @@
+golang-geocolo (0.3.2-1) unstable; urgency=medium
+
+  * Fix config parsing code to work with binary protobufs.
+
+ -- Caoimhe Chaos <caoimhechaos@protonmail.com>  Tue, 10 May 2016 13:35:00 +0100
+
 golang-geocolo (0.3.1-1) unstable; urgency=medium
 
   * Make RFC country code truly optional with a default.
