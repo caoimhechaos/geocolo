@@ -30,16 +30,17 @@
 package main
 
 import (
-	"code.google.com/p/goprotobuf/proto"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"flag"
-	"github.com/tonnerre/geocolo"
-	"google.golang.org/grpc"
 	"io/ioutil"
 	"log"
 	"net"
+
+	"code.google.com/p/goprotobuf/proto"
+	"github.com/tonnerre/geocolo"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -69,7 +70,7 @@ func main() {
 	err = proto.UnmarshalText(string(bdata), config)
 	if err != nil {
 		var err2 error = proto.Unmarshal(bdata, config)
-		if err != nil {
+		if err2 != nil {
 			log.Print("Error parsing ", configpath, " as text: ",
 				err)
 			log.Fatal("Error parsing ", configpath, ": ", err2)
