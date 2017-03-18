@@ -38,8 +38,8 @@ import (
 	"log"
 	"net"
 
-	"code.google.com/p/goprotobuf/proto"
 	"github.com/caoimhechaos/geocolo"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc"
 )
 
